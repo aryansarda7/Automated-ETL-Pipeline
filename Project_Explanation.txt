@@ -2,7 +2,7 @@
 
 ---
 
-## 👶 Layman Explanation (Simple Words)
+## Explanation (Simple Words)
 
 Imagine we want to collect public information from a website about people and the posts they write.
 
