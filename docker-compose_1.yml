@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
+      POSTGRES_DB: 
+    ports:
+      - ":"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_container
+    environment:
+      ACCEPT_EULA: ""
+      SA_PASSWORD: 
+      MSSQL_PID: 
+    ports:
+      - ":"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+  
+  transfer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - sqlserver
+    networks:
+      - default
+
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - default
+    restart: on-failure
+
+volumes:
+  postgres_data:
+  sqlserver_data:

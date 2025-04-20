@@ -1,0 +1,112 @@
+# Data Engineering Challenge - Project Explanation (Detailed + Layman Summary)
+
+---
+
+## 👶 Layman Explanation (Simple Words)
+
+Imagine we want to collect public information from a website about people and the posts they write.
+
+1. We download this information using a Python script.
+2. We store this data in a database so it's organized like an Excel sheet.
+3. We clean and combine this information so it's easier to read.
+4. We move the final clean data into another system that helps analyze it.
+
+So this project is like creating a smart pipeline that fetches, organizes, cleans, and sends data automatically from one place to another — all without manual effort.
+
+---
+
+## 🔍 Detailed Technical Walkthrough
+
+This project is an end-to-end **ETL pipeline** built using:
+
+- Python (for scripting and API requests)
+- PostgreSQL (for staging and transformation)
+- SQL Server (as the final data warehouse)
+- Docker (for containerization)
+- Docker Compose (for orchestration)
+
+---
+
+### 📥 Step 1: Extract Data from Public API
+
+- Source: https://jsonplaceholder.typicode.com
+- Endpoints used: `/users` and `/posts`
+- Script: `extract_data.py`
+- Tool: `requests` library with retry logic and logging
+- Output: Saved data to `user.json` and `posts.json` locally
+
+---
+
+### 🗃️ Step 2: Load Raw Data into PostgreSQL
+
+- Script: `load_to_postgres.py`
+- Loads data into two staging tables:
+  - `staging_users`
+  - `staging_posts`
+- Uses `psycopg2` to connect to Postgres
+- Tables are created if not already present
+- JSON fields are mapped to appropriate SQL data types
+- Logs progress and errors
+
+---
+
+### 🧠 Step 3: SQL Transformation in PostgreSQL
+
+- SQL JOIN is performed on:
+  - `staging_posts.userId = staging_users.id`
+- Output is stored in `transformed_user_posts`
+- Only selected columns are kept for clarity:
+  - post_id, post_title, post_body, user_name, user_email
+
+---
+
+### 🚀 Step 4: Load Transformed Data into SQL Server
+
+- Script: `transfer_postgres_to_sqlserver.py`
+- Reads transformed data from PostgreSQL
+- Connects to SQL Server using `pyodbc`
+- Creates a table called `FactUserPosts` if it doesn’t exist
+- Inserts all transformed rows
+- Uses environment variables to connect securely
+
+---
+
+### 🐳 Step 5: Dockerization
+
+- Two Dockerfiles created (`app`, `transfer`)
+- Uses `python:3.12-slim` for lightweight containers
+- Docker Compose spins up:
+  - PostgreSQL
+  - SQL Server
+  - Python containers
+- `.env` file is used for credentials
+
+---
+
+### 📋 Step 6: Automation
+
+- A batch file (`run_pipeline.bat`) automates the full workflow:
+  1. Extract data
+  2. Build containers
+  3. Load to Postgres
+  4. Run transformation
+  5. Transfer to SQL Server
+
+---
+
+### 🔐 Security & Configuration
+
+- Uses `os.environ` to avoid hardcoding credentials
+- Supports `.env` file for local development
+- Retry logic in API calls for reliability
+
+---
+
+### 📊 Final Outcome
+
+- PostgreSQL holds raw and transformed data
+- SQL Server holds final analytical data in `FactUserPosts`
+- You can now run SQL analysis or BI tools on top of it
+
+---
+
